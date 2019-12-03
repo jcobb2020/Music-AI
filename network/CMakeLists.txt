@@ -4,3 +4,4 @@ project(network)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(network main.cpp)
+add_executable(netwoek neural_network.cpp)
