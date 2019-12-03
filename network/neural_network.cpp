@@ -201,6 +201,25 @@ void backpropagate(network &our_network, int expected_class) {
     }
 }
 
+void load_image(float pixels[entry_layer_neurons], network &our_network){
+    for(int i=0; i<entry_layer_neurons; i++){
+        our_network.layers[0].neurons[i].activation=pixels[i];
+    }
+    return;
+}
+
+
+void learn(float pixels[entry_layer_neurons], network &our_network, int class_number){
+    load_image(pixels, our_network);
+    for (int i=0; i<hidden_layer_neurons; i++){
+        calculate_neuron_activation(our_network, 1, our_network.layers[1].neurons[i]);
+    }
+    calculate_output(our_network);
+    int result = choose_result(our_network);
+    std::cout<<"wanted "<<class_number<<"got "<< result;
+    backpropagate(our_network, class_number);
+
+}
 
 int main() {
     network our_network = initialize();
