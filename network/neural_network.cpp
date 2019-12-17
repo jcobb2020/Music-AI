@@ -227,6 +227,18 @@ void backpropagate(network &our_network, int expected_class) {
     //Errors calculated
 
     //Update weights
+    for (int i=0; i<hidden_layer_neurons; i++){
+//        neuron& updated_neuron = our_network.layers[1].neurons[i];
+        neuron updated_neuron = our_network.layers[1].neurons[i];
+        float change = 0;
+        for(int j=0; j<entry_layer_neurons; j++){
+            change = updated_neuron.weights[j] + hidden_layer_errors[i] * our_network.layers[0].neurons[j].activation * learning_const;
+            updated_neuron.weights[j]=change;
+        }
+        updated_neuron.bias = updated_neuron.bias + hidden_layer_errors[i] * updated_neuron.activation * learning_const;
+        our_network.layers[1].neurons[i] = updated_neuron;
+    }
+
     for (int i=0; i<classes; i++){
 //        neuron& updated_neuron = our_network.layers[2].neurons[i];
         neuron updated_neuron = our_network.layers[2].neurons[i];
@@ -234,24 +246,12 @@ void backpropagate(network &our_network, int expected_class) {
         float old = 0;
 
         for(int j=0; j< hidden_layer_neurons; j++){
-            change = updated_neuron.weights[j] + exit_layer_errors[i] * updated_neuron.activation * learning_const;
+            change = updated_neuron.weights[j] + exit_layer_errors[i] * our_network.layers[1].neurons[j].activation * learning_const;
             old = updated_neuron.weights[j];
             updated_neuron.weights[j] = change ;
         }
         updated_neuron.bias = updated_neuron.bias + exit_layer_errors[i] * updated_neuron.activation * learning_const;
         our_network.layers[2].neurons[i] = updated_neuron;
-    }
-
-    for (int i=0; i<hidden_layer_neurons; i++){
-//        neuron& updated_neuron = our_network.layers[1].neurons[i];
-        neuron updated_neuron = our_network.layers[1].neurons[i];
-        float change = 0;
-        for(int j=0; j<entry_layer_neurons; j++){
-            change = updated_neuron.weights[j] + hidden_layer_errors[i] * updated_neuron.activation * learning_const;
-            updated_neuron.weights[j]=change;
-        }
-        updated_neuron.bias = updated_neuron.bias + hidden_layer_errors[i] * updated_neuron.activation * learning_const;
-        our_network.layers[1].neurons[i] = updated_neuron;
     }
 }
 
@@ -324,16 +324,17 @@ int main() {
 //    learn(random_arr3, our_network, 1, true);
 //    learn(random_arr2, our_network, 2, true);
 
-    for(int i=0; i<10000000; i++){
+    for(int i=0; i<10000; i++){
 ////        learn(random_arr, our_network, 1, false);
         learn(random_arr3, our_network, 1, true);
-        learn(random_arr2, our_network, 2, true);
+        learn(random_arr2, our_network, 0, true);
 //        learn(false1, our_network, 0, true);
 //        learn(false2, our_network, 0, true);
 //        learn(true1, our_network, 1, true);
 //        learn(true2, our_network, 1, true);
     }
-
+//    learn(random_arr3, our_network, 1, true);
+//    learn(random_arr2, our_network, 0, true);
 
 
 //    check_result(false1, our_network, 0, true);
