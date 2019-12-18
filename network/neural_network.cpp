@@ -4,7 +4,7 @@
 #include <algorithm>
 
 
-const int image_height = 2;
+const int image_height = 10;
 const int image_width = 1;
 const int entry_layer_neurons = image_width * image_height;
 const int hidden_layers_number = 1;
@@ -182,7 +182,7 @@ void backpropagate(network &our_network, int expected_class) {
             neuron updated_neuron = our_network.layers[current_layer].neurons[i];
             float change = 0.0;
             for (int j = 0; j < layer_neurons_number[current_layer - 1]; j++) {
-                change = updated_neuron.weights[j] +errors[current_layer][j] * our_network.layers[current_layer-1].neurons[j].activation * learning_const;
+                change = updated_neuron.weights[j] +errors[current_layer][i] * our_network.layers[current_layer-1].neurons[j].activation * learning_const;
             updated_neuron.weights[j] = change;
             }
             updated_neuron.bias = updated_neuron.bias + errors[current_layer][i] * updated_neuron.activation * learning_const;
@@ -218,7 +218,7 @@ void check_result(float pixels[entry_layer_neurons], network &our_network, int c
 //    calculate_output(our_network);
     if (write) {
         int result = choose_result(our_network);
-        std::cout << "wanted " << class_number << "got " << result << std::endl;
+        std::cout << "wanted " << class_number << " got " << result << std::endl;
     }
 }
 
@@ -227,7 +227,7 @@ void learn(float pixels[entry_layer_neurons], network &our_network, int class_nu
     check_result(pixels, our_network, class_number, false);
     int result = choose_result(our_network);
     if (write) {
-        std::cout << "wanted " << class_number << "got " << result << std::endl;
+        std::cout << "wanted " << class_number << " got " << result << std::endl;
     }
     backpropagate(our_network, class_number);
 }
@@ -237,23 +237,34 @@ int main() {
     float random_arr[entry_layer_neurons];
     float random_arr2[entry_layer_neurons];
     float random_arr3[entry_layer_neurons];
+    float random_arr22[entry_layer_neurons];
+    float random_arr33[entry_layer_neurons];
+    float random_arr35[entry_layer_neurons];
+
 
     for (int i = 0; i < entry_layer_neurons; i++) {
         random_arr2[i] = 2;
         random_arr3[i] = -1;
+        random_arr22[i] = 1.8;
+        random_arr33[i] = -1.2;
+        random_arr35[i] = -1.1;
 
     }
     network our_network = initialize();
 
 
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 1000; i++) {
 ////        learn(random_arr, our_network, 1, false);
         if(i%10000==0){
             std::cout<<"10000"<<std::endl;
         }
-        learn(random_arr3, our_network, 1, true);
-        learn(random_arr2, our_network, 0, true);
+        learn(random_arr3, our_network, 1, false);
+        learn(random_arr2, our_network, 0, false);
+        learn(random_arr33, our_network, 1, false);
+        learn(random_arr22, our_network, 0, false);
     }
+    check_result(random_arr35, our_network, 1, true);
+
 
     display_network(our_network);
 
