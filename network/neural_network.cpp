@@ -137,7 +137,7 @@ int choose_result(network our_network) {
 
 void backpropagate(network &our_network, int expected_class) {
 
-    // calculate Errors
+
     float errors[layers_number - 1][max_neurons_in_layer]; // = new float[
 
     for (int i = layers_number - 1; i > 0; i--) {
@@ -148,7 +148,7 @@ void backpropagate(network &our_network, int expected_class) {
     float expected;
 
 
-    //Calculate output layer errors
+
     float output;
     for (int i = 0; i < output_layer_neurons; i++) {
         if (expected_class == i) {
@@ -246,8 +246,11 @@ int main() {
     network our_network = initialize();
 
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000000; i++) {
 ////        learn(random_arr, our_network, 1, false);
+        if(i%10000==0){
+            std::cout<<"10000"<<std::endl;
+        }
         learn(random_arr3, our_network, 1, true);
         learn(random_arr2, our_network, 0, true);
     }
