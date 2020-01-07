@@ -1,4 +1,6 @@
 //
+
+#include <ctime>
 #include <iostream>
 #include <math.h>
 #include <algorithm>
@@ -6,12 +8,12 @@
 
 
 const int image_height = 30;
-const int image_width = 30;
+const int image_width = 29;
 const int entry_layer_neurons = image_width * image_height;
-const int hidden_layers_number = 2;
-const int output_layer_neurons = 3; // exit layer neurons
+const int hidden_layers_number = 1;
+const int output_layer_neurons = 2; // exit layer neurons
 
-const int layer_neurons_number[] = {entry_layer_neurons, 5, 5, output_layer_neurons};
+const int layer_neurons_number[] = {entry_layer_neurons, 5, output_layer_neurons};
 const int layers_number = hidden_layers_number + 2;
 
 const float learning_const = 0.1;
@@ -222,6 +224,16 @@ void check_result(float pixels[entry_layer_neurons], network &our_network, int c
     }
 }
 
+int get_result(float pixels[entry_layer_neurons], network &our_network, int class_number, bool write){
+    load_image(pixels, our_network);
+    for (int j = 1; j < layers_number; j++) {
+        for (int i = 0; i < layer_neurons_number[j]; i++) {
+            calculate_neuron_activation(our_network, j, our_network.layers[j].neurons[i]);
+        }
+    }
+    return choose_result(our_network);
+}
+
 void learn(float pixels[entry_layer_neurons], network &our_network, int class_number, bool write) {
 //    load_image(pixels, our_network);
     check_result(pixels, our_network, class_number, false);
@@ -232,12 +244,57 @@ void learn(float pixels[entry_layer_neurons], network &our_network, int class_nu
     backpropagate(our_network, class_number);
 }
 
-//void save_waights(network our_network){
-//    std::ofstream o("weights.txt");
-//    for (int layer_number = 0; layer_number<hidden_layers_number+1; layer_number++  ){
-//
-//    }
-//}
+void save_waights(network our_network){
+    std::ofstream o("weights.txt");
+    for (int current_layer = 1; current_layer < layers_number; current_layer++) {
+        std::cout << "layer: "<< current_layer << std::endl;
+        for (int j = 0; j < layer_neurons_number[current_layer]; j++) {
+            std::cout << our_network.layers[current_layer].neurons[j].activation << std::endl;
+            std::cout << "weights" << std::endl;
+            for (int previous_layer_neuron = 0;
+                previous_layer_neuron < layer_neurons_number[current_layer - 1]; previous_layer_neuron++) {
+                o<< our_network.layers[current_layer].neurons[j].weights[previous_layer_neuron] << std::endl;
+            }
+        }
+    }
+}
+
+
+void load_weights(network our_network){
+    std::cout<<"XDDDDDD"<<std::endl;
+
+    std::ifstream infile("weights.txt");
+    std::string line;
+    float weight;
+    for (int current_layer = 1; current_layer < layers_number; current_layer++) {
+        std::cout << "layer: "<< current_layer << std::endl;
+        for (int j = 0; j < layer_neurons_number[current_layer]; j++) {
+            std::cout << our_network.layers[current_layer].neurons[j].activation << std::endl;
+            std::cout << "loading weights" << std::endl;
+            for (int previous_layer_neuron = 0;
+                previous_layer_neuron < layer_neurons_number[current_layer - 1]; previous_layer_neuron++) {
+                std::getline(infile, line);
+                our_network.layers[current_layer].neurons[j].weights[previous_layer_neuron] = std::stof(line);
+                std::cout<<our_network.layers[current_layer].neurons[j].weights[previous_layer_neuron]<<std::endl;
+                std::cout<<"loaded"<<std::endl;
+            }
+        }
+    }
+}
+
+
+float * get_note_from_txt(std::string filname){
+    float arr[entry_layer_neurons];
+    std::ifstream infile("4.txt");
+    std::string line;
+    for(int i=0; i<entry_layer_neurons; i++){
+        int data=0;
+        infile>>data;
+        arr[i]=(float)data;
+        std::cout<<data<<std::endl;
+    }
+    return arr;
+}
 
 int main() {
     srand(time(0));
@@ -258,23 +315,23 @@ int main() {
 
     }
     network our_network = initialize();
+    //load_weights(our_network);
 
 
-    for (int i = 0; i < 1000; i++) {
+//    for (int i = 0; i < 1000; i++) {
 ////        learn(random_arr, our_network, 1, false);
-        if(i%10000==0){
-            std::cout<<"10000"<<std::endl;
-        }
-        learn(random_arr3, our_network, 1, true);
+//        if(i%10000==0){
+//            std::cout<<"10000"<<std::endl;
+//        }
+//        learn(random_arr3, our_network, 1, true);
 //        learn(random_arr2, our_network, 0, false);
 //        learn(random_arr33, our_network, 1, false);
 //        learn(random_arr22, our_network, 0, false);
-    }
-    check_result(random_arr35, our_network, 1, true);
-
+//    }
+//    check_result(random_arr35, our_network, 1, true);
 
 //    display_network(our_network);
-//    save_waights(our_network);
-
+    save_waights(our_network);
+    float * arr = get_note_from_txt("4.txt");
     return 0;
 }
