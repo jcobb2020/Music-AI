@@ -2,15 +2,16 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
+#include <fstream>
 
 
-const int image_height = 10;
-const int image_width = 1;
+const int image_height = 30;
+const int image_width = 30;
 const int entry_layer_neurons = image_width * image_height;
-const int hidden_layers_number = 1;
-const int output_layer_neurons = 2; // exit layer neurons
+const int hidden_layers_number = 2;
+const int output_layer_neurons = 3; // exit layer neurons
 
-const int layer_neurons_number[] = {entry_layer_neurons, 2, output_layer_neurons};
+const int layer_neurons_number[] = {entry_layer_neurons, 5, 5, output_layer_neurons};
 const int layers_number = hidden_layers_number + 2;
 
 const float learning_const = 0.1;
@@ -176,7 +177,6 @@ void backpropagate(network &our_network, int expected_class) {
     //Errors calculated
 
     //Update weights
-
     for (int current_layer=1; current_layer<layers_number; current_layer++){
         for (int i = 0; i<layer_neurons_number[current_layer]; i++) {
             neuron updated_neuron = our_network.layers[current_layer].neurons[i];
@@ -187,8 +187,8 @@ void backpropagate(network &our_network, int expected_class) {
             }
             updated_neuron.bias = updated_neuron.bias + errors[current_layer][i] * updated_neuron.activation * learning_const;
             our_network.layers[current_layer].neurons[i] = updated_neuron;
-
         }
+        std::cout<<"xd"<<std::endl;
     }
 }
 
@@ -232,6 +232,13 @@ void learn(float pixels[entry_layer_neurons], network &our_network, int class_nu
     backpropagate(our_network, class_number);
 }
 
+//void save_waights(network our_network){
+//    std::ofstream o("weights.txt");
+//    for (int layer_number = 0; layer_number<hidden_layers_number+1; layer_number++  ){
+//
+//    }
+//}
+
 int main() {
     srand(time(0));
     float random_arr[entry_layer_neurons];
@@ -258,15 +265,16 @@ int main() {
         if(i%10000==0){
             std::cout<<"10000"<<std::endl;
         }
-        learn(random_arr3, our_network, 1, false);
-        learn(random_arr2, our_network, 0, false);
-        learn(random_arr33, our_network, 1, false);
-        learn(random_arr22, our_network, 0, false);
+        learn(random_arr3, our_network, 1, true);
+//        learn(random_arr2, our_network, 0, false);
+//        learn(random_arr33, our_network, 1, false);
+//        learn(random_arr22, our_network, 0, false);
     }
     check_result(random_arr35, our_network, 1, true);
 
 
-    display_network(our_network);
+//    display_network(our_network);
+//    save_waights(our_network);
 
     return 0;
 }
