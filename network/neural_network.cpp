@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <fstream>
 
-
+const int learn_files=59;
 const int image_height = 30;
 const int image_width = 30;
 const int entry_layer_neurons = image_width * image_height;
@@ -244,6 +244,8 @@ void learn(float pixels[entry_layer_neurons], network &our_network, int class_nu
     backpropagate(our_network, class_number);
 }
 
+
+
 void save_waights(network our_network){
     std::ofstream o("weights.txt");
     for (int current_layer = 1; current_layer < layers_number; current_layer++) {
@@ -284,8 +286,8 @@ void load_weights(network our_network){
 
 
 float * get_note_from_txt(std::string filename, int &noteclass){
-    float arr[entry_layer_neurons];
-    std::ifstream infile("4.txt");
+    float * arr=new float[entry_layer_neurons];
+    std::ifstream infile(filename);
     std::string line;
     infile>>noteclass;
     for(int i=0; i<entry_layer_neurons; i++){
@@ -295,6 +297,21 @@ float * get_note_from_txt(std::string filename, int &noteclass){
         std::cout<<data<<std::endl;
     }
     return arr;
+}
+
+void learn_from_random_file(network &our_network){
+    int file_number = rand()%59;
+    std::string filename =  std::to_string(file_number);
+    filename = filename + ".txt";
+    int noteclass = 0;
+    float * arr = get_note_from_txt("tekstfiles/" + filename, noteclass);
+    learn(arr, our_network, noteclass, false);
+}
+
+void train_network(network our_network, int amount){
+    for(int i=0; i<amount; i++){
+        learn_from_random_file(our_network);
+    }
 }
 
 int main() {
@@ -315,7 +332,7 @@ int main() {
         random_arr35[i] = -1.1;
 
     }
-//    network our_network = initialize();
+    network our_network = initialize();
     //load_weights(our_network);
 
 
@@ -333,8 +350,13 @@ int main() {
 
 //    display_network(our_network);
 //    save_waights(our_network);
+
+    train_network(our_network, 2000);
+    learn_from_random_file(our_network);
     int note_class = 66;
     float * arr = get_note_from_txt("4.txt", note_class);
-    std::cout<<"note: "<<note_class<<std::endl;
+    std::cout<<"ENDOFLEARNING "<<std::endl;
+
+    check_result(arr, our_network, 1, true);
     return 0;
 }
