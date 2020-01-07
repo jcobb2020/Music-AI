@@ -58,6 +58,9 @@ void display_network(network network1){
     for(int i=0; i<layer_1_neurons; i++){
         std::cout<<network1.entry_layer[i].activation;
         std::cout<<"\n";
+        for(int l=0; l<layer_2_neurons; l++){
+            std::cout<<network1.layers_1_2_links[i*l + l].weight<<"\n";
+        }
     }
     for(int j=0; j<layer_2_neurons; j++){
         std::cout<<network1.second_layer[j].activation;
@@ -86,6 +89,9 @@ network initialize_network(){
         std::cout << "network initializingiiiiii!" << std::endl;
 
         for(int j=0; j<layer_2_neurons; j++){
+            new_network.layers_1_2_links[i*layer_2_neurons + j].neuron1 = &new_network.entry_layer[i];
+            new_network.layers_1_2_links[i*layer_2_neurons + j].neuron2 = &new_network.second_layer[i];
+
             new_network.layers_1_2_links[i*layer_2_neurons + j].weight = generate_random_weight();
             std::cout << "i=" << i << "j=" << j <<"i*layer_1_neurons + j = "<< i*layer_1_neurons + j << std::endl;
 
@@ -96,12 +102,18 @@ network initialize_network(){
     for(int i=0; i<layer_2_neurons; i++){
         new_network.second_layer[i].activation = 2;
         for(int j=0; j<layer_3_neurons; j++){
+            new_network.layers_2_3_links[i*layer_3_neurons + j].neuron1 = &new_network.second_layer[i];
+            new_network.layers_2_3_links[i*layer_3_neurons + j].neuron2 = &new_network.third_layer[i];
+
             new_network.layers_2_3_links[i*layer_3_neurons + j].weight = generate_random_weight();
         }
     }
     for(int i=0; i<layer_3_neurons; i++){
         new_network.third_layer[i].activation = 3;
         for(int j=0; j<exit_layer_neurons; j++){
+            new_network.layer_3_exit_links[i*exit_layer_neurons + j].neuron1 = &new_network.third_layer[i];
+            new_network.layer_3_exit_links[i*exit_layer_neurons + j].neuron2 = &new_network.exit_layer[i];
+
             new_network.layer_3_exit_links[i*exit_layer_neurons + j].weight = generate_random_weight();
         }
     }
@@ -110,7 +122,6 @@ network initialize_network(){
     }
 
     return new_network;
-
 }
 
 int main() {
@@ -118,6 +129,8 @@ int main() {
     std::cout << "Hello, World!" << std::endl;
     network network1 = initialize_network();
     std::cout << "network initialized!" << std::endl;
+
+
 
     display_network(network1);
     std::string a;

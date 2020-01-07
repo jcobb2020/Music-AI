@@ -1,17 +1,21 @@
 //
 #include <iostream>
 #include <math.h>
+#include <algorithm>
+#include <fstream>
+
 
 const int image_height = 30;
 const int image_width = 30;
 const int entry_layer_neurons = image_width * image_height;
-const int hidden_layer_neurons = 16;
-const int layers_number = 3;
+const int hidden_layers_number = 2;
+const int output_layer_neurons = 3; // exit layer neurons
 
+const int layer_neurons_number[] = {entry_layer_neurons, 5, 5, output_layer_neurons};
+const int layers_number = hidden_layers_number + 2;
 
-const float learning_const = 0.2;
-
-const int classes = 4; // exit layer neurons
+const float learning_const = 0.1;
+const int max_neurons_in_layer = layer_neurons_number[0];
 
 
 struct neuron {
@@ -30,54 +34,43 @@ struct network {
 };
 
 float sigmoid(float x) {
-    return x / (1 + exp(-x));
+    return 1 / (1 + exp(-x));
 }
 
 float transfer_derivative(float x) {
-    return x * (1 - x);
+    return x * (1.0 - x);
 }
 
 float generate_random_weight() {
-    return (rand() % 100) / 100.0;
+    return ((rand() % 200) / 100.0) - 1.0;
+}
+
+float generate_random_bias() {
+    return generate_random_weight();
 }
 
 network initialize() {
     std::cout << "network initializing!" << std::endl;
     network new_network;
+    std::cout << "layers created" << std::endl;
 
-    layer layers[layers_number];
-    std::cout << "network initializing!2" << std::endl;
+    //Initialize layers
 
-    new_network.layers[0].neurons = new neuron[entry_layer_neurons];
-    std::cout << "network initializing!3" << std::endl;
-
-    new_network.layers[1].neurons = new neuron[hidden_layer_neurons];
-    std::cout << "network initializing!4" << std::endl;
-
-    new_network.layers[2].neurons = new neuron[classes];
-    std::cout << "network initializing!5" << std::endl;
-
-//    for(int i=0; i<entry_layer_neurons; i++){
-//        new_network.layers[0].neurons[i].weights;
-//    }
-
-//    new_network.layers[0] = layers[0];
-//    new_network.layers[1] = layers[1];
-//    new_network.layers[2] = layers[2];
-    for (int i = 0; i < hidden_layer_neurons; i++) {
-        new_network.layers[1].neurons[i].weights = new float[entry_layer_neurons];
+    for (int i = 0; i < layers_number; i++) {
+        new_network.layers[i].neurons = new neuron[layer_neurons_number[i]];
+        for (int j = 0; j < layer_neurons_number[i]; j++) {
+            new_network.layers[i].neurons[j].activation = 0;
+            if (i > 0) {
+                new_network.layers[i].neurons[j].weights = new float[layer_neurons_number[i - 1]];
+                for (int k = 0; k < layer_neurons_number[i - 1]; k++) {
+                    new_network.layers[i].neurons[j].weights[k] = generate_random_weight();
+                }
+                new_network.layers[i].neurons[j].bias = generate_random_bias();
+            }
+        }
     }
+    std::cout << "neurons and weight initialized" << std::endl;
 
-    for (int i = 0; i < classes; i++) {
-        new_network.layers[2].neurons[i].weights = new float[hidden_layer_neurons];
-    }
-
-    for (int i = 0; i < entry_layer_neurons; i++) {
-        new_network.layers[0].neurons[i].activation = i;
-//        layers[0].neurons[i].activation = 0;
-//        for(int j=0; j<)
-//        layers[0].neurons[i].weights = generate_random_weight();
-    }
 
     //DEBUG
     for (int i = 0; i < entry_layer_neurons; i++) {
@@ -85,135 +78,124 @@ network initialize() {
     }
     // !DEBUG
 
-    std::cout << "network initializing!6" << std::endl;
+    std::cout << "whole network initialized" << std::endl;
 
-    for (int i = 0; i < hidden_layer_neurons; i++) {
-        new_network.layers[1].neurons[i].activation = 0;
-        for (int j = 0; j < entry_layer_neurons; j++) {
-            new_network.layers[1].neurons[i].weights[j] = generate_random_weight();
-        }
-        new_network.layers[1].neurons[i].bias = generate_random_weight();
-
-    }
-    std::cout << "network initializing!7" << std::endl;
-
-    for (int i = 0; i < classes; i++) {
-        new_network.layers[2].neurons[i].activation = 0;
-        for (int j = 0; j < hidden_layer_neurons; j++) {
-            new_network.layers[2].neurons[i].weights[j] = generate_random_weight();
-        }
-        new_network.layers[2].neurons[i].bias = generate_random_weight();
-    }
-    std::cout << "network initializing!8" << std::endl;
 
     return new_network;
 }
 
 
 void display_network(network network1) {
-    for (int layer_id = 0; layer_id < layers_number; layer_id++) {
-        std::cout << "layer displaying: " << layer_id << std::endl;
-        if (layer_id == 1) {
-            for (int j = 0; j < hidden_layer_neurons; j++) {
-                for (int k = 0; k < entry_layer_neurons; k++) {
-                    std::cout << network1.layers[1].neurons[j].weights[k] << layer_id << std::endl;
+    for (int current_layer = 0; current_layer < layers_number; current_layer++) {
+        std::cout << "layer: "<< current_layer << std::endl;
+        for (int j = 0; j < layer_neurons_number[current_layer]; j++) {
+            std::cout << network1.layers[current_layer].neurons[j].activation << std::endl;
+            if (current_layer > 0) {
+                std::cout << "weights" << std::endl;
+                for (int previous_layer_neuron = 0;
+                    previous_layer_neuron < layer_neurons_number[current_layer - 1]; previous_layer_neuron++) {
+                    std::cout << network1.layers[current_layer].neurons[j].weights[previous_layer_neuron] << std::endl;
                 }
             }
         }
     }
-
 }
 
 
 void calculate_neuron_activation(network &our_network, int layer_number, neuron &neuron1) {
-    int previous_layer_neurons;
-    if (layer_number == 1) {
-        previous_layer_neurons = entry_layer_neurons;
-    }
-    else if (layer_number == 2) {
-        previous_layer_neurons = hidden_layer_neurons;
-    } else{
+
+    if (layer_number == 0) {
         return;
     }
 
     float activation = 0;
-    for (int i = 0; i < previous_layer_neurons; i++) {
+    for (int i = 0; i < layer_neurons_number[layer_number - 1]; i++) {
         activation += neuron1.weights[i] * our_network.layers[layer_number - 1].neurons[i].activation;
     }
     activation += neuron1.bias;
-    activation = activation / (previous_layer_neurons + 1);
     activation = sigmoid(activation);
     neuron1.activation = activation;
 }
 
-void calculate_output(network our_network) {
-    for (int i = 0; i < classes; i++) {
-        calculate_neuron_activation(our_network, 2, our_network.layers[2].neurons[i]);
-    }
-}
+//void calculate_output(network &our_network) {
+//    for (int i = 0; i < output_layer_neurons; i++) {
+//        calculate_neuron_activation(our_network, layers_number-1, our_network.layers[2].neurons[i]);
+//    }
+//}
 
 int choose_result(network our_network) {
-    float max = 0.0;
+    float max_activation = 0.0;
     int class_number = 0;
-    for (int i = 0; i < classes; i++) {
-        if (our_network.layers[2].neurons[i].activation > max) {
-            max = our_network.layers[2].neurons[i].activation;
+    for (int i = 0; i < output_layer_neurons; i++) {
+        if (our_network.layers[layers_number - 1].neurons[i].activation > max_activation) {
+            max_activation = our_network.layers[layers_number - 1].neurons[i].activation;
             class_number = i;
         };
     }
-    std::cout<<"zgodność "<<max<<std::endl;
+    std::cout << "zgodność " << max_activation << std::endl;
     return class_number;
 }
 
 void backpropagate(network &our_network, int expected_class) {
 
-    // calculate Errors
-    float exit_layer_errors[classes];
-    float hidden_layer_errors[hidden_layer_neurons];
 
-    int expected;
-    float output;
-    for(int i=0; i<classes; i++){
-        if(expected_class == i){
-            expected = 1;
-        } else{
-            expected = 0;
-        }
-        output = our_network.layers[2].neurons[i].activation;
-        exit_layer_errors[i] = (expected - output) * transfer_derivative(output);
+    float errors[layers_number - 1][max_neurons_in_layer]; // = new float[
+
+    for (int i = layers_number - 1; i > 0; i--) {
+        for (int j = 0; j < layer_neurons_number[i]; j++)
+            errors[i][j] = 0.0;
     }
-    float error;
-    for(int i=0; i<hidden_layer_neurons; i++){
-        error = 0.0;
-        output = our_network.layers[1].neurons[i].activation;
-        for(int j=0; j<classes; j++){
-            neuron next_layer_neuron = our_network.layers[2].neurons[j];
-            error += (next_layer_neuron.weights[i] * exit_layer_errors[j]) * transfer_derivative(output);
+
+    float expected;
+
+
+
+    float output;
+    for (int i = 0; i < output_layer_neurons; i++) {
+        if (expected_class == i) {
+            expected = 1.0;
+        } else {
+            expected = 0.0;
         }
-        hidden_layer_errors[i] = error;
+        output = our_network.layers[layers_number - 1].neurons[i].activation;
+        errors[layers_number - 1][i] += (expected - output) * transfer_derivative(output);
+    }
+
+    float error;
+    for (int current_layer = layers_number - 2; current_layer > 0; current_layer--) {
+        for (int i = 0; i < layer_neurons_number[current_layer]; i++) {
+            error = 0.0;
+            output = our_network.layers[current_layer].neurons[i].activation;
+            for (int j = 0; j < layer_neurons_number[current_layer+1]; j++) {
+                neuron next_layer_neuron = our_network.layers[current_layer+1].neurons[j];
+                error += (next_layer_neuron.weights[i] * errors[current_layer+1][j]) *
+                         transfer_derivative(output);  // "/classes?
+            }
+            errors[current_layer][i] = error;
+        }
     }
     //Errors calculated
 
     //Update weights
-    for (int i=0; i<classes; i++){
-        neuron& updated_neuron = our_network.layers[2].neurons[i];
-        for(int j=0; j< hidden_layer_neurons; j++){
-            updated_neuron.weights[j] = updated_neuron.weights[j] + exit_layer_errors[i] * updated_neuron.activation * learning_const;
+    for (int current_layer=1; current_layer<layers_number; current_layer++){
+        for (int i = 0; i<layer_neurons_number[current_layer]; i++) {
+            neuron updated_neuron = our_network.layers[current_layer].neurons[i];
+            float change = 0.0;
+            for (int j = 0; j < layer_neurons_number[current_layer - 1]; j++) {
+                change = updated_neuron.weights[j] +errors[current_layer][i] * our_network.layers[current_layer-1].neurons[j].activation * learning_const;
+            updated_neuron.weights[j] = change;
+            }
+            updated_neuron.bias = updated_neuron.bias + errors[current_layer][i] * updated_neuron.activation * learning_const;
+            our_network.layers[current_layer].neurons[i] = updated_neuron;
         }
-    }
-
-    for (int i=0; i<hidden_layer_neurons; i++){
-        neuron& updated_neuron = our_network.layers[1].neurons[i];
-        for(int j=0; j<entry_layer_neurons; j++){
-            updated_neuron.weights[j] = updated_neuron.weights[j] + hidden_layer_errors[i] * updated_neuron.activation * learning_const;
-        }
+        std::cout<<"xd"<<std::endl;
     }
 }
 
-void load_image(float pixels[entry_layer_neurons], network &our_network){
+void load_image(float pixels[entry_layer_neurons], network &our_network) {
     //inicializuje ok
-    for(int i=0; i<entry_layer_neurons; i++){
-        our_network.layers[0].neurons[i].activation=pixels[i];
+    for (int i = 0; i < entry_layer_neurons; i++) {
+        our_network.layers[0].neurons[i].activation = pixels[i];
     }
 
 //    for(int i=0; i<entry_layer_neurons; i++){
@@ -222,43 +204,77 @@ void load_image(float pixels[entry_layer_neurons], network &our_network){
     return;
 }
 
-
-void learn(float pixels[entry_layer_neurons], network &our_network, int class_number){
+void check_result(float pixels[entry_layer_neurons], network &our_network, int class_number, bool write) {
     load_image(pixels, our_network);
-    for (int i=0; i<hidden_layer_neurons; i++){
-        calculate_neuron_activation(our_network, 1, our_network.layers[1].neurons[i]);
+    for (int j = 1; j < layers_number; j++) {
+        for (int i = 0; i < layer_neurons_number[j]; i++) {
+            calculate_neuron_activation(our_network, j, our_network.layers[j].neurons[i]);
+        }
     }
-    for (int i=0; i<hidden_layer_neurons; i++){
-        std::cout<<our_network.layers[1].neurons[i].activation<<std::endl;
+//    for (int i=0; i<hidden_layer_neurons; i++){
+////        std::cout<<our_network.layers[1].neurons[i].activation<<std::endl;
+//    }
+
+//    calculate_output(our_network);
+    if (write) {
+        int result = choose_result(our_network);
+        std::cout << "wanted " << class_number << " got " << result << std::endl;
     }
-
-    calculate_output(our_network);
-    int result = choose_result(our_network);
-    std::cout<<"wanted "<<class_number<<"got "<< result<<std::endl;
-    backpropagate(our_network, class_number);
-
 }
 
+void learn(float pixels[entry_layer_neurons], network &our_network, int class_number, bool write) {
+//    load_image(pixels, our_network);
+    check_result(pixels, our_network, class_number, false);
+    int result = choose_result(our_network);
+    if (write) {
+        std::cout << "wanted " << class_number << " got " << result << std::endl;
+    }
+    backpropagate(our_network, class_number);
+}
+
+//void save_waights(network our_network){
+//    std::ofstream o("weights.txt");
+//    for (int layer_number = 0; layer_number<hidden_layers_number+1; layer_number++  ){
+//
+//    }
+//}
+
 int main() {
-    srand( time( 0 ) );
+    srand(time(0));
     float random_arr[entry_layer_neurons];
-    for (int i=0; i<entry_layer_neurons; i++){
-        random_arr[i] = rand()%100 /100.0;
+    float random_arr2[entry_layer_neurons];
+    float random_arr3[entry_layer_neurons];
+    float random_arr22[entry_layer_neurons];
+    float random_arr33[entry_layer_neurons];
+    float random_arr35[entry_layer_neurons];
+
+
+    for (int i = 0; i < entry_layer_neurons; i++) {
+        random_arr2[i] = 2;
+        random_arr3[i] = -1;
+        random_arr22[i] = 1.8;
+        random_arr33[i] = -1.2;
+        random_arr35[i] = -1.1;
+
     }
-
-
-
     network our_network = initialize();
-    for(int i=0; i<1000; i++){
-        learn(random_arr, our_network, 1);
+
+
+    for (int i = 0; i < 1000; i++) {
+////        learn(random_arr, our_network, 1, false);
+        if(i%10000==0){
+            std::cout<<"10000"<<std::endl;
+        }
+        learn(random_arr3, our_network, 1, true);
+//        learn(random_arr2, our_network, 0, false);
+//        learn(random_arr33, our_network, 1, false);
+//        learn(random_arr22, our_network, 0, false);
     }
+    check_result(random_arr35, our_network, 1, true);
+
+
 //    display_network(our_network);
+//    save_waights(our_network);
 
     return 0;
 }
-
-
-
-// Created by jcobb on 12/3/19.
-//
-
