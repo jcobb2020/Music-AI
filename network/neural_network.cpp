@@ -8,7 +8,7 @@
 
 
 const int image_height = 30;
-const int image_width = 29;
+const int image_width = 30;
 const int entry_layer_neurons = image_width * image_height;
 const int hidden_layers_number = 1;
 const int output_layer_neurons = 2; // exit layer neurons
@@ -283,10 +283,11 @@ void load_weights(network our_network){
 }
 
 
-float * get_note_from_txt(std::string filname){
+float * get_note_from_txt(std::string filename, int &noteclass){
     float arr[entry_layer_neurons];
     std::ifstream infile("4.txt");
     std::string line;
+    infile>>noteclass;
     for(int i=0; i<entry_layer_neurons; i++){
         int data=0;
         infile>>data;
@@ -314,7 +315,7 @@ int main() {
         random_arr35[i] = -1.1;
 
     }
-    network our_network = initialize();
+//    network our_network = initialize();
     //load_weights(our_network);
 
 
@@ -331,7 +332,9 @@ int main() {
 //    check_result(random_arr35, our_network, 1, true);
 
 //    display_network(our_network);
-    save_waights(our_network);
-    float * arr = get_note_from_txt("4.txt");
+//    save_waights(our_network);
+    int note_class = 66;
+    float * arr = get_note_from_txt("4.txt", note_class);
+    std::cout<<"note: "<<note_class<<std::endl;
     return 0;
 }
