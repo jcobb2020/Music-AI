@@ -1,0 +1,10 @@
+[
+  {"note": "full", "freq" : 523},
+  {"note": "full", "freq" : 587},
+  {"note": "full", "freq" : 659},
+  {"note": "full", "freq" : 698},
+  {"note": "full", "freq" : 784},
+  {"note": "full", "freq" : 880},
+  {"note": "full", "freq" : 988},
+  {"note": "full", "freq" : 1047}
+]

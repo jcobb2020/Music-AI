@@ -1,0 +1,20 @@
+[
+  {"note": "quarter", "freq" : 300},
+  {"note": "eight", "freq" : 300},
+  {"note": "quarter", "freq" : 500},
+  {"note": "eight", "freq" : 300},
+  {"note": "quarter", "freq" : 200},
+  {"note": "half", "freq" : 150},
+  {"note": "half", "freq" : 125},
+
+  {"note": "quarter", "freq" : 300},
+  {"note": "eight", "freq" : 300},
+  {"note": "quarter", "freq" : 500},
+  {"note": "eight", "freq" : 300},
+  {"note": "quarter", "freq" : 200},
+  {"note": "quarter", "freq" : 150},
+  {"note": "quarter", "freq" : 200},
+  {"note": "quarter", "freq" : 150},
+  {"note": "quarter", "freq" : 125}
+
+]
