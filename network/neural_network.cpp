@@ -8,8 +8,9 @@
 #include <sstream>
 
 
-const int learn_files=200;
-const int test_set_size=20;
+const int learn_files=350;
+const int test_set_size=40;
+float treshhold = 0.70;
 
 const int image_height = 30;
 const int image_width = 30;
@@ -130,12 +131,15 @@ void calculate_neuron_activation(network &our_network, int layer_number, neuron 
 //}
 
 int choose_result(network our_network) {
+    float our_treshold = treshhold;
     float max_activation = 0.0;
-    int class_number = 0;
+    int class_number = -1;
     for (int i = 0; i < output_layer_neurons; i++) {
         if (our_network.layers[layers_number - 1].neurons[i].activation > max_activation) {
             max_activation = our_network.layers[layers_number - 1].neurons[i].activation;
-            class_number = i;
+            if (our_network.layers[layers_number - 1].neurons[i].activation > our_treshold){
+                class_number = i;
+            }
         };
     }
     std::cout << "zgodność " << max_activation << std::endl;
@@ -344,14 +348,15 @@ void check_network(network &our_network){
         std::string filename = ss.str();
         filename = filename + ".txt";
         int noteclass = 0;
-        float * arr = get_note_from_txt("tekstfiles/" + filename, noteclass);
+        float * arr = get_note_from_txt("test_batch/" + filename, noteclass);
+        std::cout<<"class wanted"<<noteclass<<std::endl;
         int res = get_result(arr, our_network, noteclass, true);
         if(res==noteclass){
             got_right++;
         }
     }
     float max_right = test_set_size/1.0;
-    float percentage = right/max_right;
+    float percentage = got_right/max_right;
     std::cout<<"accuracy: "<<percentage<<std::endl;
 
 }
@@ -402,7 +407,7 @@ int main() {
 //    display_network(our_network);
 //    save_waights(our_network);
 
-    train_network(our_network, 100000);
+    train_network(our_network, 20000);
     learn_from_random_file(our_network);
     int note_class = 66;
     float * arr = get_note_from_txt("4.txt", note_class);
